@@ -1,5 +1,10 @@
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Layout() {
-  return <Stack />;
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Slot />
+    </SafeAreaView>
+  );
 }
