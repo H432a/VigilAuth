@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
-import { View, Text, Button, FlatList, Alert } from "react-native";
-import { getFromSecureStore } from "../utils/secureStorage";
+import {
+  View,
+  Text,
+  Button,
+  FlatList,
+  Alert,
+  PanResponder,
+  GestureResponderEvent,
+} from "react-native";
 import { useRouter } from "expo-router";
+import { getFromSecureStore } from "../utils/secureStorage";
+import useBehaviorTracking from "../hooks/useBehaviourTracking";
 import useBehaviorData from "../hooks/useBehaviourData";
 import { verifyRisk } from "../utils/verifyRisk";
 
@@ -10,11 +19,37 @@ export default function Dashboard() {
   const [showBalance, setShowBalance] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [blockTransfer, setBlockTransfer] = useState(false);
+  const [session, setSession] = useState<any[]>([]);
+  const [duressTimer, setDuressTimer] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   const router = useRouter();
-  const session = useBehaviorData();
+  useBehaviorTracking(setSession); // Track sensor session
+  useBehaviorData(); // Optional if used for further feature analysis
 
-  // Load user from secure storage
+  // ✅ PanResponder to detect long press on top-left corner
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderGrant: (e: GestureResponderEvent) => {
+      const { locationX, locationY } = e.nativeEvent;
+      if (locationX < 60 && locationY < 60) {
+        const timer = setTimeout(() => {
+          Alert.alert("🔐 Duress Mode", "Entering fake dashboard...");
+          router.replace("/fake-dashboard");
+        }, 5000);
+        setDuressTimer(timer);
+      }
+    },
+    onPanResponderRelease: () => {
+      if (duressTimer) {
+        clearTimeout(duressTimer);
+        setDuressTimer(null);
+      }
+    },
+  });
+
+  // ✅ Load user data securely
   useEffect(() => {
     getFromSecureStore("userData").then((data) => {
       if (data) setUser(JSON.parse(data));
@@ -22,7 +57,7 @@ export default function Dashboard() {
     });
   }, []);
 
-  // Risk detection every 15 seconds
+  // ✅ Every 15s, send 50-length session to ML model
   useEffect(() => {
     const interval = setInterval(async () => {
       if (session.length === 50) {
@@ -56,7 +91,7 @@ export default function Dashboard() {
   if (!user) return <Text style={{ padding: 20 }}>Loading...</Text>;
 
   return (
-    <View style={{ padding: 20 }}>
+    <View style={{ padding: 20 }} {...panResponder.panHandlers}>
       <Text style={{ fontSize: 18, marginBottom: 10 }}>
         🏦 Bank: {user.bankName}
       </Text>
@@ -100,10 +135,16 @@ export default function Dashboard() {
           title="Transfer Money"
           onPress={() => {
             if (blockTransfer) {
-              Alert.alert("❌ Blocked", "Transfers are disabled due to risk.");
-            } else {
-              router.push("/transfer");
+              Alert.alert(
+                "Blocked",
+                "Transfer is disabled due to suspicious behavior."
+              );
+              return;
             }
+            router.push({
+              pathname: "/transfer",
+              params: { blockTransfer: blockTransfer.toString() },
+            });
           }}
         />
       </View>

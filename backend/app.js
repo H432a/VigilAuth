@@ -14,6 +14,7 @@ connectDB();
 
 app.use("/api", userRoutes);
 app.use("/api", require("./routes/riskRoutes"));
+app.use("/api/transfer", require("./routes/transfer"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
