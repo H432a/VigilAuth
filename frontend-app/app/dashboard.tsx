@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { getFromSecureStore } from "../utils/secureStorage";
-import useBehaviorTracking from "../hooks/useBehaviourTracking";
+import useBehaviorTracking from "../hooks/useBehaviorTracker";
 import useBehaviorData from "../hooks/useBehaviourData";
 import { verifyRisk } from "../utils/verifyRisk";
 

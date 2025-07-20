@@ -72,3 +72,4 @@ yarn-error.*
 .DS_Store
 *.pem
 
+backend/ml/simulated_touch_data.csv

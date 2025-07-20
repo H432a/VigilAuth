@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 
+backend/ml/simulated_touch_data.csv
 # Expo
 .expo/
 dist/
