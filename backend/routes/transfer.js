@@ -48,9 +48,9 @@ router.post("/", async (req, res) => {
       else if (score < 0.65) risk = "medium";
 
       // STEP 4: Block high risk
-      if (risk === "high") {
+      if (risk === "high" || risk === "medium") {
         return res.status(401).json({
-          message: "High Risk Detected! Transfer blocked.",
+          message: "Medium Risk Detected! Transfer blocked.",
           risk,
           score: score.toFixed(2),
         });
